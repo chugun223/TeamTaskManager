@@ -47,4 +47,5 @@
         o	И т.п.  
   
 ###  Основные технологии ###  
-REST API, БД, Spring  
+REST API, БД, Spring Boot  
+
