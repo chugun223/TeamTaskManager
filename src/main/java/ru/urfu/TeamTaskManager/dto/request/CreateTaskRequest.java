@@ -1,5 +1,3 @@
-package ru.urfu.TeamTaskManager.dto.request;
-
 import lombok.Builder;
 import lombok.Data;
 
