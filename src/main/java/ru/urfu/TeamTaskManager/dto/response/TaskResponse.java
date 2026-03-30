@@ -1,0 +1,18 @@
+package ru.urfu.TeamTaskManager.dto.response;
+
+import lombok.Builder;
+import lombok.Data;
+import ru.urfu.TeamTaskManager.enums.TaskStatus;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+public class TaskResponse {
+    private Long id;
+    private String title;
+    private String description;
+    private LocalDateTime deadline;
+    private TaskStatus taskStatus;
+    private UserResponseBrief assignedUser;
+}
