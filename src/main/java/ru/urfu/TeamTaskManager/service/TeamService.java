@@ -28,6 +28,9 @@ public class TeamService {
         }
         User teamCreator = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        if(teamCreator.getTeam() != null) {
+            throw new IllegalArgumentException("User is already a member of another team");
+        }
         Team team = Team.builder()
                 .name(request.getName())
                 .description(request.getDescription())

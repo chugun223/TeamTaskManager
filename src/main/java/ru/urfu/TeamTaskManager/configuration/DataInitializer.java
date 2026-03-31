@@ -26,6 +26,7 @@ public class DataInitializer {
                            TeamService teamService) {
         return args -> {
             if (userRepository.count() > 0) {
+                System.out.println("ttm srarted");
                 return;
             }
 
@@ -56,7 +57,7 @@ public class DataInitializer {
             task.setAssignedUser(memberUser);
 
             taskRepository.save(task);
-
+            System.out.println("ttm srarted");
         };
     }
 }
