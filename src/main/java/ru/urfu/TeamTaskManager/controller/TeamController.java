@@ -4,7 +4,7 @@ package ru.urfu.TeamTaskManager.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
-import ru.urfu.TeamTaskManager.dto.request.CreateTeamRequest;
+import ru.urfu.TeamTaskManager.dto.request.TeamRequest;
 import ru.urfu.TeamTaskManager.dto.response.TeamResponse;
 import ru.urfu.TeamTaskManager.dto.response.TeamResponseBrief;
 import ru.urfu.TeamTaskManager.dto.response.UserResponseBrief;
@@ -22,7 +22,7 @@ public class TeamController {
     private final DtoMapper dtoMapper;
 
     @PostMapping
-    public TeamResponse createTeam(@RequestParam Long userId, @RequestBody CreateTeamRequest request) {
+    public TeamResponse createTeam(@RequestParam Long userId, @RequestBody TeamRequest request) {
         var team = teamService.createTeam(userId, request);
         return dtoMapper.toTeamResponse(team);
     }
@@ -53,7 +53,7 @@ public class TeamController {
     }
 
     @PutMapping("/{teamId}")
-    public TeamResponse updateTeam(@PathVariable Long teamId, @RequestBody CreateTeamRequest request) {
+    public TeamResponse updateTeam(@PathVariable Long teamId, @RequestBody TeamRequest request) {
         var team = teamService.updateTeam(teamId, request);
         return dtoMapper.toTeamResponse(team);
     }

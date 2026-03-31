@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class CreateTaskRequest {
+public class TaskRequest {
     private String title;
     private String description;
     private LocalDateTime deadline;

@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.urfu.TeamTaskManager.domain.Team;
 import ru.urfu.TeamTaskManager.domain.User;
-import ru.urfu.TeamTaskManager.dto.request.CreateUserRequest;
-import ru.urfu.TeamTaskManager.dto.request.UpdateUserRequest;
+import ru.urfu.TeamTaskManager.dto.request.UserRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
 import ru.urfu.TeamTaskManager.repository.TeamRepository;
 import ru.urfu.TeamTaskManager.repository.UserRepository;
@@ -23,7 +22,7 @@ public class UserService {
     private final TeamRepository teamRepository;
 
     @Transactional
-    public User createUser(CreateUserRequest request) {
+    public User createUser(UserRequest request) {
         if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
@@ -100,7 +99,7 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUser(Long userId, UpdateUserRequest request) {
+    public User updateUser(Long userId, UserRequest request) {
         User user = getUserById(userId);
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());

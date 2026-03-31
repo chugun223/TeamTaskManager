@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.response.TaskResponse;
-import ru.urfu.TeamTaskManager.dto.request.CreateTaskRequest;
+import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
 import ru.urfu.TeamTaskManager.dto.response.TaskResponseBrief;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
 import ru.urfu.TeamTaskManager.service.TaskService;
@@ -22,7 +22,7 @@ public class TaskController {
     private final DtoMapper dtoMapper;
 
     @PostMapping
-    public TaskResponse createTask(@RequestBody CreateTaskRequest request) {
+    public TaskResponse createTask(@RequestBody TaskRequest request) {
         var task = taskService.createTaskFromRequest(request);
         return dtoMapper.toTaskResponse(task);
     }
@@ -67,7 +67,7 @@ public class TaskController {
     }
 
     @PutMapping("/{taskId}")
-    public TaskResponse updateTask(@PathVariable Long taskId, @RequestBody CreateTaskRequest request) {
+    public TaskResponse updateTask(@PathVariable Long taskId, @RequestBody TaskRequest request) {
         var task = taskService.updateTaskFromRequest(taskId, request);
         return dtoMapper.toTaskResponse(task);
     }

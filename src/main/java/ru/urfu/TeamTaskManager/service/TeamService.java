@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.urfu.TeamTaskManager.domain.Team;
 import ru.urfu.TeamTaskManager.domain.User;
-import ru.urfu.TeamTaskManager.dto.request.CreateTeamRequest;
+import ru.urfu.TeamTaskManager.dto.request.TeamRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
 import ru.urfu.TeamTaskManager.repository.TeamRepository;
 import ru.urfu.TeamTaskManager.repository.UserRepository;
@@ -22,7 +22,7 @@ public class TeamService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Team createTeam(Long userId, CreateTeamRequest request) {
+    public Team createTeam(Long userId, TeamRequest request) {
         if (request.getName() == null || request.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Team name cannot be null or empty");
         }
@@ -68,7 +68,7 @@ public class TeamService {
     }
 
     @Transactional
-    public Team updateTeam(Long teamId, CreateTeamRequest request) {
+    public Team updateTeam(Long teamId, TeamRequest request) {
         Team team = getTeamById(teamId);
         team.setName(request.getName());
         team.setDescription(request.getDescription());

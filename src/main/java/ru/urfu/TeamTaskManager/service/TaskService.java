@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.urfu.TeamTaskManager.domain.*;
-import ru.urfu.TeamTaskManager.dto.request.CreateTaskRequest;
+import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
 import ru.urfu.TeamTaskManager.repository.*;
 
@@ -19,7 +19,7 @@ public class TaskService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Task createTaskFromRequest(CreateTaskRequest request) {
+    public Task createTaskFromRequest(TaskRequest request) {
         if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Task title cannot be null or empty");
         }
@@ -75,7 +75,7 @@ public class TaskService {
     }
 
     @Transactional
-    public Task updateTaskFromRequest(Long taskId, CreateTaskRequest request) {
+    public Task updateTaskFromRequest(Long taskId, TaskRequest request) {
         Task existingTask = getTaskById(taskId);
 
         existingTask.setTitle(request.getTitle());

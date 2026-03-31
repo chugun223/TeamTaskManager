@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CreateTeamRequest {
+public class TeamRequest {
     private String name;
     private String description;
 }
