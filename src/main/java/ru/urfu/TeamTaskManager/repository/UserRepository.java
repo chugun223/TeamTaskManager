@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByTeamId(Long teamId);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

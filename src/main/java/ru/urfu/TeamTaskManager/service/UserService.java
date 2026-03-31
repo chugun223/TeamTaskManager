@@ -32,6 +32,12 @@ public class UserService {
         if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username '" + request.getUsername() + "' already exists");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email '" + request.getEmail() + "' already exists");
+        }
 
         User user = User.builder()
                 .username(request.getUsername())
