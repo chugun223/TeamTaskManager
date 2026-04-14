@@ -5,9 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.request.TeamRequest;
-import ru.urfu.TeamTaskManager.dto.response.TeamResponse;
-import ru.urfu.TeamTaskManager.dto.response.TeamResponseBrief;
-import ru.urfu.TeamTaskManager.dto.response.UserResponseBrief;
+import ru.urfu.TeamTaskManager.dto.response.*;
 import ru.urfu.TeamTaskManager.service.TeamService;
 
 import java.util.List;
@@ -28,7 +26,7 @@ public class TeamController {
     }
 
     @GetMapping
-    public List<TeamResponseBrief> getAllTeams() {
+    public List<TeamResponse> getAllTeams() {
         return teamService.getAllTeams().stream()
                 .map(dtoMapper::toTeamResponseBrief)
                 .collect(Collectors.toList());
@@ -46,7 +44,7 @@ public class TeamController {
     }
 
     @GetMapping("/{teamId}/members")
-    public List<UserResponseBrief> getTeamUsers(@PathVariable Long teamId) {
+    public List<UserResponse> getTeamUsers(@PathVariable Long teamId) {
         return teamService.getTeamMembers(teamId).stream()
                 .map(dtoMapper::toUserResponseBrief)
                 .collect(Collectors.toList());

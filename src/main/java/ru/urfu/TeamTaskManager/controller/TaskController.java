@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.response.TaskResponse;
 import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
-import ru.urfu.TeamTaskManager.dto.response.TaskResponseBrief;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
 import ru.urfu.TeamTaskManager.service.TaskService;
 
@@ -32,9 +31,9 @@ public class TaskController {
         var task = taskService.getTaskById(taskId);
         return dtoMapper.toTaskResponse(task);
     }
-
+    //начал изменения тут
     @GetMapping("/user/{userId}")
-    public List<TaskResponseBrief> getUserTasks(@PathVariable Long userId) {
+    public List<TaskResponse> getUserTasks(@PathVariable Long userId) {
         var tasks = taskService.getUserTasks(userId);
         return tasks.stream()
                 .map(dtoMapper::toTaskResponseBrief)
@@ -42,7 +41,7 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponseBrief> getAllTasks() {
+    public List<TaskResponse> getAllTasks() {
         var tasks = taskService.getAllTasks();
         return tasks.stream()
                 .map(dtoMapper::toTaskResponseBrief)

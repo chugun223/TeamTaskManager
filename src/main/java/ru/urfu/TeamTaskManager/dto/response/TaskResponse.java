@@ -14,5 +14,5 @@ public class TaskResponse {
     private String description;
     private LocalDateTime deadline;
     private TaskStatus taskStatus;
-    private UserResponseBrief assignedUser;
+    private UserResponse assignedUser;
 }

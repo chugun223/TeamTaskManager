@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.request.UserRequest;
 import ru.urfu.TeamTaskManager.dto.response.UserResponse;
-import ru.urfu.TeamTaskManager.dto.response.UserResponseBrief;
 import ru.urfu.TeamTaskManager.service.UserService;
 
 import java.util.List;
@@ -33,14 +32,14 @@ public class UserController {
     }
 
     @GetMapping("/team/{teamId}")
-    public List<UserResponseBrief> getUsersByTeam(@PathVariable Long teamId) {
+    public List<UserResponse> getUsersByTeam(@PathVariable Long teamId) {
         return userService.getUsersByTeam(teamId).stream()
                 .map(dtoMapper::toUserResponseBrief)
                 .collect(Collectors.toList());
     }
 
     @GetMapping
-    public List<UserResponseBrief> getAll() {
+    public List<UserResponse> getAll() {
         return userService.getAllUsers().stream()
                 .map(dtoMapper::toUserResponseBrief)
                 .collect(Collectors.toList());

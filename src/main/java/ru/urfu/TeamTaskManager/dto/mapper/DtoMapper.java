@@ -30,13 +30,15 @@ public class DtoMapper {
         return builder.build();
     }
 
-    public UserResponseBrief toUserResponseBrief(User user) {
+    public UserResponse toUserResponseBrief(User user) {
         if (user == null) return null;
-        return UserResponseBrief.builder()
+        return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole())
+                .team(null)
+                .tasks(null)
                 .build();
     }
 
@@ -57,12 +59,13 @@ public class DtoMapper {
         return builder.build();
     }
 
-    public TeamResponseBrief toTeamResponseBrief(Team team) {
+    public TeamResponse toTeamResponseBrief(Team team) {
         if (team == null) return null;
-        return TeamResponseBrief.builder()
+        return TeamResponse.builder()
                 .id(team.getId())
                 .name(team.getName())
                 .description(team.getDescription())
+                .members(null)
                 .build();
     }
 
@@ -79,12 +82,15 @@ public class DtoMapper {
                 .build();
     }
 
-    public TaskResponseBrief toTaskResponseBrief(Task task) {
+    public TaskResponse toTaskResponseBrief(Task task) {
         if (task == null) return null;
-        return TaskResponseBrief.builder()
+        return TaskResponse.builder()
                 .id(task.getId())
                 .title(task.getTitle())
+                .description(task.getDescription())
+                .deadline(task.getDeadline())
                 .taskStatus(task.getTaskStatus())
+                .assignedUser(null)
                 .build();
     }
 }

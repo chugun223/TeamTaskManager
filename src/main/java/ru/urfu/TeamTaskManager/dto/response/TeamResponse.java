@@ -11,6 +11,6 @@ public class TeamResponse {
     private Long id;
     private String name;
     private String description;
-    private List<UserResponseBrief> members;
+    private List<UserResponse> members;
 }
 

@@ -13,6 +13,6 @@ public class UserResponse {
     private String username;
     private String email;
     private Role role;
-    private TeamResponseBrief team;
-    private List<TaskResponseBrief> tasks;
+    private TeamResponse team;
+    private List<TaskResponse> tasks;
 }
