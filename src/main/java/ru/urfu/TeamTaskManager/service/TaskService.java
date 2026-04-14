@@ -19,7 +19,7 @@ public class TaskService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Task createTaskFromRequest(TaskRequest request) {
+    public Task createTask(TaskRequest request) {
         if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Task title cannot be null or empty");
         }

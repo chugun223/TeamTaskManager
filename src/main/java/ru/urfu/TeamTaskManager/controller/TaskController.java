@@ -22,7 +22,7 @@ public class TaskController {
 
     @PostMapping
     public TaskResponse createTask(@RequestBody TaskRequest request) {
-        var task = taskService.createTaskFromRequest(request);
+        var task = taskService.createTask(request);
         return dtoMapper.toTaskResponse(task);
     }
 
@@ -31,7 +31,7 @@ public class TaskController {
         var task = taskService.getTaskById(taskId);
         return dtoMapper.toTaskResponse(task);
     }
-    //начал изменения тут
+
     @GetMapping("/user/{userId}")
     public List<TaskResponse> getUserTasks(@PathVariable Long userId) {
         var tasks = taskService.getUserTasks(userId);
