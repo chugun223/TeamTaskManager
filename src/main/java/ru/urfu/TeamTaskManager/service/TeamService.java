@@ -42,7 +42,6 @@ public class TeamService {
 
         teamCreator.setTeam(savedTeam);
         teamCreator.setRole(Role.TEAMLEADER);
-        userRepository.save(teamCreator);
 
         return savedTeam;
     }
@@ -64,7 +63,6 @@ public class TeamService {
         for (User user : members) {
             user.setTeam(null);
             user.setRole(Role.NONE);
-            userRepository.save(user);
         }
         teamRepository.delete(team);
     }

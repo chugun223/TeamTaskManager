@@ -77,7 +77,7 @@ public class UserService {
 
         user.setTeam(team);
         user.setRole(Role.MEMBER);
-        return userRepository.save(user);
+        return user;
     }
 
     @Transactional
@@ -114,7 +114,7 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
-        return userRepository.save(user);
+        return user;
     }
 
     @Transactional
@@ -137,7 +137,6 @@ public class UserService {
         currentLeader.setRole(Role.MEMBER);
         newLeader.setRole(Role.TEAMLEADER);
 
-        userRepository.save(currentLeader);
-        return userRepository.save(newLeader);
+        return newLeader;
     }
 }

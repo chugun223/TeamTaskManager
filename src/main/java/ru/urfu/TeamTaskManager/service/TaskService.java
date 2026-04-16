@@ -70,7 +70,7 @@ public class TaskService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         task.setAssignedUser(user);
-        return taskRepository.save(task);
+        return task;
     }
 
     @Transactional
@@ -92,13 +92,13 @@ public class TaskService {
             existingTask.setAssignedUser(user);
         }
 
-        return taskRepository.save(existingTask);
+        return existingTask;
     }
 
     @Transactional
     public Task updateTaskStatus(Long taskId, TaskStatus taskStatus) {
         Task task = getTaskById(taskId);
         task.setTaskStatus(taskStatus);
-        return taskRepository.save(task);
+        return task;
     }
 }
