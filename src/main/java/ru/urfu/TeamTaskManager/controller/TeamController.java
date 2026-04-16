@@ -2,6 +2,8 @@ package ru.urfu.TeamTaskManager.controller;
 
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.request.TeamRequest;
@@ -26,10 +28,8 @@ public class TeamController {
     }
 
     @GetMapping
-    public List<TeamResponse> getAllTeams() {
-        return teamService.getAllTeams().stream()
-                .map(dtoMapper::toTeamResponseBrief)
-                .collect(Collectors.toList());
+    public Page<TeamResponse> getAllTeams(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return teamService.getAllTeams(page, size).map(dtoMapper::toTeamResponseBrief);
     }
 
     @GetMapping("/{id}")

@@ -2,6 +2,9 @@ package ru.urfu.TeamTaskManager.service;
 
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.urfu.TeamTaskManager.domain.Team;
@@ -44,8 +47,9 @@ public class TeamService {
         return savedTeam;
     }
 
-    public List<Team> getAllTeams() {
-        return teamRepository.findAll();
+    public Page<Team> getAllTeams(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return teamRepository.findAll(pageable);
     }
 
     public Team getTeamById(Long id) {

@@ -2,6 +2,7 @@ package ru.urfu.TeamTaskManager.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.request.UserRequest;
@@ -39,10 +40,8 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserResponse> getAll() {
-        return userService.getAllUsers().stream()
-                .map(dtoMapper::toUserResponseBrief)
-                .collect(Collectors.toList());
+    public Page<UserResponse> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return userService.getAllUsers(page, size).map(dtoMapper::toUserResponseBrief);
     }
 
     @GetMapping("/{userId}")

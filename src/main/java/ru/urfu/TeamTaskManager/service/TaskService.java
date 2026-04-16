@@ -1,6 +1,9 @@
 package ru.urfu.TeamTaskManager.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.urfu.TeamTaskManager.domain.*;
@@ -50,8 +53,9 @@ public class TaskService {
         return user.getTasks();
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public Page<Task> getAllTasks(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return taskRepository.findAll(pageable);
     }
 
     @Transactional

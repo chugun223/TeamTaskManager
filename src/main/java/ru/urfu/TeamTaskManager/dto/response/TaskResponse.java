@@ -13,6 +13,7 @@ public class TaskResponse {
     private String title;
     private String description;
     private LocalDateTime deadline;
+    private LocalDateTime created_at;
     private TaskStatus taskStatus;
     private UserResponse assignedUser;
 }
