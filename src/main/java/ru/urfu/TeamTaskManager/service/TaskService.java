@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.urfu.TeamTaskManager.domain.*;
 import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
+import ru.urfu.TeamTaskManager.enums.Role;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
+import ru.urfu.TeamTaskManager.exception.NotFoundException;
+import ru.urfu.TeamTaskManager.exception.ValidationException;
 import ru.urfu.TeamTaskManager.repository.*;
 
 import java.util.List;
@@ -22,9 +25,16 @@ public class TaskService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Task createTask(TaskRequest request) {
+    public Task createTask(TaskRequest request, Long userId) {
+        User currentUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        if (!currentUser.getRole().equals("TEAM_LEADER")) {
+            throw new ValidationException("Only team leaders can create tasks");
+        }
         if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
-            throw new IllegalArgumentException("Task title cannot be null or empty");
+            throw new ValidationException("Task title cannot be null or empty");
+        }
+        if (request.getDeadline() != null && request.getDeadline().isAfter(java.time.LocalDateTime.now())) {
+            throw new ValidationException("Task deadline cannot be earlier than current time");
         }
 
         Task task = Task.builder()
@@ -34,8 +44,7 @@ public class TaskService {
                 .build();
 
         if (request.getAssignedUserId() != null) {
-            User user = userRepository.findById(request.getAssignedUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getAssignedUserId()));
+            User user = userRepository.findById(request.getAssignedUserId()).orElseThrow(() -> new NotFoundException("User not found with id: " + request.getAssignedUserId()));
             task.setAssignedUser(user);
         }
 
@@ -43,13 +52,11 @@ public class TaskService {
     }
 
     public Task getTaskById(Long taskId) {
-        return taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+        return taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Task not found with id: " + taskId));
     }
 
     public List<Task> getUserTasks(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
         return user.getTasks();
     }
 
@@ -65,33 +72,45 @@ public class TaskService {
     }
 
     @Transactional
-    public Task assignTaskToUser(Long taskId, Long userId) {
+    public Task changeTaskAssignedUser(Long taskId, Long userId, Long teamLeaderId) {
+        User teamLeader = userRepository.findById(teamLeaderId).orElseThrow(() -> new NotFoundException("User not found with id: " + teamLeaderId));
+        if (teamLeader.getRole() != Role.TEAMLEADER) {
+            throw new ValidationException("Only team leaders can reassign tasks");
+        }
         Task task = getTaskById(taskId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        task.setAssignedUser(user);
-        return task;
-    }
+        User previousAssignedUser = task.getAssignedUser();
+        if (previousAssignedUser == null) {
+            throw new ValidationException("Task has no assigned user");
+        }
+        User nextAssignedUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        if(nextAssignedUser.getTeam() == null || previousAssignedUser.getTeam() == null || teamLeader.getTeam() == null) {
+            throw new ValidationException("User team information is missing, cannot reassign task");
+        }
+        if(!teamLeader.getTeam().equals(nextAssignedUser.getTeam()) || !teamLeader.getTeam().equals(previousAssignedUser.getTeam())) {
+            throw new ValidationException("Team leader can only reassign tasks to users from their team");
+        }
 
-    @Transactional
-    public Task changeTaskAssignedUser(Long taskId, Long userId) {
-        return assignTaskToUser(taskId, userId);
+        task.setAssignedUser(nextAssignedUser);
+        return task;
     }
 
     @Transactional
     public Task updateTaskFromRequest(Long taskId, TaskRequest request) {
         Task existingTask = getTaskById(taskId);
-
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw new ValidationException("Task title cannot be null or empty");
+        }
+        if (request.getDeadline() != null && request.getDeadline().isAfter(java.time.LocalDateTime.now())) {
+            throw new ValidationException("Task deadline cannot be earlier than current time");
+        }
         existingTask.setTitle(request.getTitle());
         existingTask.setDescription(request.getDescription());
         existingTask.setDeadline(request.getDeadline());
 
         if (request.getAssignedUserId() != null) {
-            User user = userRepository.findById(request.getAssignedUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getAssignedUserId()));
+            User user = userRepository.findById(request.getAssignedUserId()).orElseThrow(() -> new NotFoundException("User not found with id: " + request.getAssignedUserId()));
             existingTask.setAssignedUser(user);
         }
-
         return existingTask;
     }
 

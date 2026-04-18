@@ -11,6 +11,10 @@ import ru.urfu.TeamTaskManager.domain.Team;
 import ru.urfu.TeamTaskManager.domain.User;
 import ru.urfu.TeamTaskManager.dto.request.UserRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
+import ru.urfu.TeamTaskManager.exception.ConflictException;
+import ru.urfu.TeamTaskManager.exception.ForbiddenException;
+import ru.urfu.TeamTaskManager.exception.NotFoundException;
+import ru.urfu.TeamTaskManager.exception.ValidationException;
 import ru.urfu.TeamTaskManager.repository.TeamRepository;
 import ru.urfu.TeamTaskManager.repository.UserRepository;
 
@@ -27,19 +31,19 @@ public class UserService {
     @Transactional
     public User createUser(UserRequest request) {
         if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-            throw new IllegalArgumentException("Username cannot be null or empty");
+            throw new ValidationException("Username cannot be null or empty");
         }
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
+            throw new ValidationException("Email cannot be null or empty");
         }
         if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be null or empty");
+            throw new ValidationException("Password cannot be null or empty");
         }
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username '" + request.getUsername() + "' already exists");
+            throw new ConflictException("Username '" + request.getUsername() + "' already exists");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email '" + request.getEmail() + "' already exists");
+            throw new ConflictException("Email '" + request.getEmail() + "' already exists");
         }
 
         User user = User.builder()
@@ -57,11 +61,13 @@ public class UserService {
     }
 
     public User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     public List<User> getUsersByTeam(Long teamId) {
+        if(!teamRepository.existsById(teamId)) {
+            throw new NotFoundException("Team not found with id: " + teamId);
+        }
         return userRepository.findByTeamId(teamId);
     }
 
@@ -69,11 +75,10 @@ public class UserService {
     public User assignUserToTeam(Long userId, Long teamId) {
         User user = getUserById(userId);
         if (user.getTeam() != null) {
-            throw new RuntimeException("User is already in a team");
+            throw new ConflictException("User is already in a team");
         }
 
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new NotFoundException("Team not found with id: " + teamId));
 
         user.setTeam(team);
         user.setRole(Role.MEMBER);
@@ -83,11 +88,12 @@ public class UserService {
     @Transactional
     public void removeUserFromTeam(Long teamId, Long userId) {
         User user = getUserById(userId);
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
+        if (!teamRepository.existsById(teamId)) {
+            throw new NotFoundException("Team not found with id: " + teamId);
+        }
 
         if (user.getTeam() == null || !user.getTeam().getId().equals(teamId)) {
-            throw new RuntimeException("User is not in this team");
+            throw new ForbiddenException("User is not in this team");
         }
 
         Role previousRole = user.getRole();
@@ -96,7 +102,7 @@ public class UserService {
         userRepository.save(user);
         List<User> members = userRepository.findByTeamId(teamId);
         if (previousRole == Role.TEAMLEADER && members != null && !members.isEmpty()) {
-            User newLeader = members.get(0);
+            User newLeader = members.getFirst();
             newLeader.setRole(Role.TEAMLEADER);
             userRepository.save(newLeader);
         }
@@ -110,6 +116,21 @@ public class UserService {
 
     @Transactional
     public User updateUser(Long userId, UserRequest request) {
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+            throw new ValidationException("Username cannot be null or empty");
+        }
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new ValidationException("Email cannot be null or empty");
+        }
+        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            throw new ValidationException("Password cannot be null or empty");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new ConflictException("Username '" + request.getUsername() + "' already exists");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("Email '" + request.getEmail() + "' already exists");
+        }
         User user = getUserById(userId);
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
@@ -123,15 +144,15 @@ public class UserService {
         User newLeader = getUserById(newLeaderId);
 
         if (currentLeader.getRole() != Role.TEAMLEADER) {
-            throw new IllegalArgumentException("Only TeamLeader can transfer their role");
+            throw new ForbiddenException("Only TeamLeader can transfer their role");
         }
 
         if (currentLeader.getTeam() == null || !currentLeader.getTeam().getId().equals(newLeader.getTeam().getId())) {
-            throw new IllegalArgumentException("Both users must be in the same team");
+            throw new ForbiddenException("Both users must be in the same team");
         }
 
         if (newLeader.getRole() != Role.MEMBER) {
-            throw new IllegalArgumentException("User must have MEMBER role to become TeamLeader");
+            throw new ValidationException("User must have MEMBER role to become TeamLeader");
         }
 
         currentLeader.setRole(Role.MEMBER);

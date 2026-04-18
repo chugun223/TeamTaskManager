@@ -22,8 +22,8 @@ public class TaskController {
     private final DtoMapper dtoMapper;
 
     @PostMapping
-    public TaskResponse createTask(@RequestBody TaskRequest request) {
-        var task = taskService.createTask(request);
+    public TaskResponse createTask(@RequestBody TaskRequest request, @RequestParam Long creatorId) {
+        var task = taskService.createTask(request, creatorId);
         return dtoMapper.toTaskResponse(task);
     }
 
@@ -51,15 +51,9 @@ public class TaskController {
         taskService.deleteTask(taskId);
     }
 
-    @PutMapping("/{taskId}/assign/{userId}")
-    public TaskResponse assignTaskToUser(@PathVariable Long taskId, @PathVariable Long userId) {
-        var task = taskService.assignTaskToUser(taskId, userId);
-        return dtoMapper.toTaskResponse(task);
-    }
-
-    @PutMapping("/{taskId}/reassign/{userId}")
-    public TaskResponse changeTaskAssignment(@PathVariable Long taskId, @PathVariable Long userId) {
-        var task = taskService.changeTaskAssignedUser(taskId, userId);
+    @PutMapping("/{taskId}/reassign/{userId}/teamLeader/{leaderId}")
+    public TaskResponse changeTaskAssignment(@PathVariable Long taskId, @PathVariable Long userId, @PathVariable Long leaderId) {
+        var task = taskService.changeTaskAssignedUser(taskId, userId, leaderId);
         return dtoMapper.toTaskResponse(task);
     }
 

@@ -11,6 +11,9 @@ import ru.urfu.TeamTaskManager.domain.Team;
 import ru.urfu.TeamTaskManager.domain.User;
 import ru.urfu.TeamTaskManager.dto.request.TeamRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
+import ru.urfu.TeamTaskManager.exception.ConflictException;
+import ru.urfu.TeamTaskManager.exception.NotFoundException;
+import ru.urfu.TeamTaskManager.exception.ValidationException;
 import ru.urfu.TeamTaskManager.repository.TeamRepository;
 import ru.urfu.TeamTaskManager.repository.UserRepository;
 
@@ -27,12 +30,12 @@ public class TeamService {
     @Transactional
     public Team createTeam(Long userId, TeamRequest request) {
         if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Team name cannot be null or empty");
+            throw new ValidationException("Team name cannot be null or empty");
         }
         User teamCreator = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
         if(teamCreator.getTeam() != null) {
-            throw new IllegalArgumentException("User is already a member of another team");
+            throw new ConflictException("User is already a member of another team");
         }
         Team team = Team.builder()
                 .name(request.getName())
@@ -52,8 +55,7 @@ public class TeamService {
     }
 
     public Team getTeamById(Long id) {
-        return teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found with id: " + id));
+        return teamRepository.findById(id).orElseThrow(() -> new NotFoundException("Team not found with id: " + id));
     }
 
     @Transactional
@@ -74,6 +76,9 @@ public class TeamService {
 
     @Transactional
     public Team updateTeam(Long teamId, TeamRequest request) {
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new ValidationException("Team name cannot be null or empty");
+        }
         Team team = getTeamById(teamId);
         team.setName(request.getName());
         team.setDescription(request.getDescription());
