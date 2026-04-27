@@ -18,10 +18,12 @@ import ru.urfu.TeamTaskManager.exception.ConflictException;
 import ru.urfu.TeamTaskManager.exception.ForbiddenException;
 import ru.urfu.TeamTaskManager.exception.NotFoundException;
 import ru.urfu.TeamTaskManager.exception.ValidationException;
+import ru.urfu.TeamTaskManager.repository.TaskRepository;
 import ru.urfu.TeamTaskManager.repository.TeamRepository;
 import ru.urfu.TeamTaskManager.repository.UserRepository;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
@@ -31,6 +33,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final TaskRepository taskRepository;
 
     @Transactional
     public User createUser(UserRequest request) {
@@ -127,6 +130,24 @@ public class UserService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        taskRepository.findByAssignedUserId(user.getId()).forEach(task -> task.setAssignedUser(null));
+        Team team = user.getTeam();
+        if (team != null) {
+            List<User> members = userRepository.findByTeamId(team.getId());
+            members.remove(user);
+            if (user.getRole() == Role.TEAMLEADER) {
+                if (!members.isEmpty()) {
+                    User newLeader = members.get(new Random().nextInt(members.size()));
+                    newLeader.setRole(Role.TEAMLEADER);
+                }
+            }
+            user.setTeam(null);
+            user.setRole(Role.NONE);
+            List<User> after = userRepository.findByTeamId(team.getId());
+            if (after.isEmpty()) {
+                teamRepository.delete(team);
+            }
+        }
         userRepository.delete(user);
         SecurityContextHolder.clearContext();
     }
