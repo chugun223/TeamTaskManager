@@ -1,6 +1,7 @@
 package ru.urfu.TeamTaskManager.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -22,7 +23,7 @@ public class TeamController {
     private final DtoMapper dtoMapper;
 
     @PostMapping
-    public TeamResponse createTeam(@RequestParam Long userId, @RequestBody TeamRequest request) {
+    public TeamResponse createTeam(@RequestParam Long userId, @RequestBody @Valid TeamRequest request) {
         var team = teamService.createTeam(userId, request);
         return dtoMapper.toTeamResponse(team);
     }
@@ -51,7 +52,7 @@ public class TeamController {
     }
 
     @PutMapping("/{teamId}")
-    public TeamResponse updateTeam(@PathVariable Long teamId, @RequestBody TeamRequest request) {
+    public TeamResponse updateTeam(@PathVariable Long teamId, @RequestBody @Valid TeamRequest request) {
         var team = teamService.updateTeam(teamId, request);
         return dtoMapper.toTeamResponse(team);
     }

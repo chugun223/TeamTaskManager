@@ -10,6 +10,7 @@ import ru.urfu.TeamTaskManager.domain.*;
 import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
+import ru.urfu.TeamTaskManager.exception.ForbiddenException;
 import ru.urfu.TeamTaskManager.exception.NotFoundException;
 import ru.urfu.TeamTaskManager.exception.ValidationException;
 import ru.urfu.TeamTaskManager.repository.*;
@@ -27,14 +28,8 @@ public class TaskService {
     @Transactional
     public Task createTask(TaskRequest request, Long userId) {
         User currentUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
-        if (!currentUser.getRole().equals("TEAM_LEADER")) {
-            throw new ValidationException("Only team leaders can create tasks");
-        }
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
-            throw new ValidationException("Task title cannot be null or empty");
-        }
-        if (request.getDeadline() != null && request.getDeadline().isAfter(java.time.LocalDateTime.now())) {
-            throw new ValidationException("Task deadline cannot be earlier than current time");
+        if (currentUser.getRole() != Role.TEAMLEADER) {
+            throw new ForbiddenException("Only team leaders can create tasks");
         }
 
         Task task = Task.builder()
@@ -97,12 +92,6 @@ public class TaskService {
     @Transactional
     public Task updateTaskFromRequest(Long taskId, TaskRequest request) {
         Task existingTask = getTaskById(taskId);
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
-            throw new ValidationException("Task title cannot be null or empty");
-        }
-        if (request.getDeadline() != null && request.getDeadline().isAfter(java.time.LocalDateTime.now())) {
-            throw new ValidationException("Task deadline cannot be earlier than current time");
-        }
         existingTask.setTitle(request.getTitle());
         existingTask.setDescription(request.getDescription());
         existingTask.setDeadline(request.getDeadline());

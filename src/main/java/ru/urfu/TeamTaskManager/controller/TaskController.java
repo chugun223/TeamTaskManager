@@ -1,6 +1,7 @@
 package ru.urfu.TeamTaskManager.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class TaskController {
     private final DtoMapper dtoMapper;
 
     @PostMapping
-    public TaskResponse createTask(@RequestBody TaskRequest request, @RequestParam Long creatorId) {
+    public TaskResponse createTask(@RequestBody @Valid TaskRequest request, @RequestParam Long creatorId) {
         var task = taskService.createTask(request, creatorId);
         return dtoMapper.toTaskResponse(task);
     }
@@ -58,7 +59,7 @@ public class TaskController {
     }
 
     @PutMapping("/{taskId}")
-    public TaskResponse updateTask(@PathVariable Long taskId, @RequestBody TaskRequest request) {
+    public TaskResponse updateTask(@PathVariable Long taskId, @RequestBody @Valid TaskRequest request) {
         var task = taskService.updateTaskFromRequest(taskId, request);
         return dtoMapper.toTaskResponse(task);
     }

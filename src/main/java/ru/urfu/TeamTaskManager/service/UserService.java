@@ -30,15 +30,6 @@ public class UserService {
 
     @Transactional
     public User createUser(UserRequest request) {
-        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-            throw new ValidationException("Username cannot be null or empty");
-        }
-        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new ValidationException("Email cannot be null or empty");
-        }
-        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-            throw new ValidationException("Password cannot be null or empty");
-        }
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ConflictException("Username '" + request.getUsername() + "' already exists");
         }
@@ -116,15 +107,6 @@ public class UserService {
 
     @Transactional
     public User updateUser(Long userId, UserRequest request) {
-        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-            throw new ValidationException("Username cannot be null or empty");
-        }
-        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new ValidationException("Email cannot be null or empty");
-        }
-        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-            throw new ValidationException("Password cannot be null or empty");
-        }
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ConflictException("Username '" + request.getUsername() + "' already exists");
         }

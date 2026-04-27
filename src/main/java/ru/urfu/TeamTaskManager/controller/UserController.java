@@ -1,6 +1,7 @@
 package ru.urfu.TeamTaskManager.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class UserController {
     private final DtoMapper dtoMapper;
 
     @PostMapping
-    public UserResponse createUser(@RequestBody UserRequest request) {
+    public UserResponse createUser(@RequestBody @Valid UserRequest request) {
         var user = userService.createUser(request);
         return dtoMapper.toUserResponse(user);
     }
@@ -61,7 +62,7 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public UserResponse updateUser(@PathVariable Long userId, @RequestBody UserRequest request) {
+    public UserResponse updateUser(@PathVariable Long userId, @RequestBody @Valid UserRequest request) {
         var user = userService.updateUser(userId, request);
         return dtoMapper.toUserResponse(user);
     }

@@ -29,9 +29,6 @@ public class TeamService {
 
     @Transactional
     public Team createTeam(Long userId, TeamRequest request) {
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new ValidationException("Team name cannot be null or empty");
-        }
         User teamCreator = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
         if(teamCreator.getTeam() != null) {
@@ -76,9 +73,6 @@ public class TeamService {
 
     @Transactional
     public Team updateTeam(Long teamId, TeamRequest request) {
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new ValidationException("Team name cannot be null or empty");
-        }
         Team team = getTeamById(teamId);
         team.setName(request.getName());
         team.setDescription(request.getDescription());
