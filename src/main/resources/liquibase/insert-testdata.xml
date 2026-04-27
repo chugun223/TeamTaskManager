@@ -7,9 +7,7 @@
 
     <changeSet id="4" author="chugun223">
 
-        <!-- ===================== -->
         <!-- TEAM 1 -->
-        <!-- ===================== -->
         <insert tableName="teams">
             <column name="id" valueNumeric="1"/>
             <column name="name" value="Backend Team"/>
@@ -54,9 +52,7 @@
         </insert>
 
 
-        <!-- ===================== -->
         <!-- TEAM 2 -->
-        <!-- ===================== -->
         <insert tableName="teams">
             <column name="id" valueNumeric="2"/>
             <column name="name" value="Frontend Team"/>
@@ -101,9 +97,7 @@
         </insert>
 
 
-        <!-- ===================== -->
         <!-- USERS WITHOUT TEAM -->
-        <!-- ===================== -->
         <insert tableName="users">
             <column name="id" valueNumeric="9"/>
             <column name="username" value="free1"/>
@@ -140,10 +134,26 @@
             <column name="team_id" value="null"/>
         </insert>
 
+        <insert tableName="users">
+            <column name="id" valueNumeric="13"/>
+            <column name="username" value="free5"/>
+            <column name="email" value="free5@mail.com"/>
+            <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
+            <column name="role" value="NONE"/>
+            <column name="team_id" value="null"/>
+        </insert>
 
-        <!-- ===================== -->
+        <insert tableName="users">
+            <column name="id" valueNumeric="14"/>
+            <column name="username" value="free6"/>
+            <column name="email" value="free6@mail.com"/>
+            <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
+            <column name="role" value="NONE"/>
+            <column name="team_id" value="null"/>
+        </insert>
+
+
         <!-- TASKS -->
-        <!-- ===================== -->
         <insert tableName="tasks">
             <column name="id" valueNumeric="1"/>
             <column name="title" value="Backend API"/>
