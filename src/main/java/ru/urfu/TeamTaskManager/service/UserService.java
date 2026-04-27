@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.urfu.TeamTaskManager.domain.Team;
@@ -25,6 +28,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class UserService {
 
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
 
@@ -40,7 +44,7 @@ public class UserService {
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.NONE)
                 .build();
         return userRepository.save(user);
@@ -64,7 +68,13 @@ public class UserService {
 
     @Transactional
     public User assignUserToTeam(Long userId, Long teamId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User leader = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
         User user = getUserById(userId);
+        if(leader.getTeam() == null || !leader.getTeam().getId().equals(teamId)) {
+            throw new ForbiddenException("Team leaders can only assign users to their own team");
+        }
         if (user.getTeam() != null) {
             throw new ConflictException("User is already in a team");
         }
@@ -77,14 +87,23 @@ public class UserService {
     }
 
     @Transactional
-    public void removeUserFromTeam(Long teamId, Long userId) {
+    public void removeUserFromTeam(Long userId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User currentUser = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
         User user = getUserById(userId);
-        if (!teamRepository.existsById(teamId)) {
-            throw new NotFoundException("Team not found with id: " + teamId);
+        if(currentUser.getTeam() == null){
+            throw new ForbiddenException("You are not in any team");
         }
-
-        if (user.getTeam() == null || !user.getTeam().getId().equals(teamId)) {
-            throw new ForbiddenException("User is not in this team");
+        if(user.getTeam() == null) {
+            throw new ConflictException("User is not in any team");
+        }
+        Long teamId = user.getTeam().getId();
+        if(currentUser.getRole() == Role.TEAMLEADER && !currentUser.getTeam().getId().equals(teamId)) {
+            throw new ForbiddenException("Team leaders can only remove users from their own team");
+        }
+        if(currentUser.getRole() == Role.MEMBER && !currentUser.getId().equals(userId)) {
+            throw new ForbiddenException("Members can only remove themselves from a team");
         }
 
         Role previousRole = user.getRole();
@@ -97,44 +116,50 @@ public class UserService {
             newLeader.setRole(Role.TEAMLEADER);
             userRepository.save(newLeader);
         }
+        if(members.isEmpty()) {
+            Team team = teamRepository.findById(teamId).orElseThrow(() -> new NotFoundException("Team not found with id: " + teamId));
+            teamRepository.delete(team);
+        }
     }
 
     @Transactional
-    public void deleteUser(Long userId) {
-        User user = getUserById(userId);
+    public void deleteUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
         userRepository.delete(user);
+        SecurityContextHolder.clearContext();
     }
 
     @Transactional
-    public User updateUser(Long userId, UserRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new ConflictException("Username '" + request.getUsername() + "' already exists");
+    public User updateUser(UserRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        if (!user.getUsername().equals(request.getUsername()) &&
+                userRepository.existsByUsername(request.getUsername())) {
+            throw new ConflictException("Username already exists");
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new ConflictException("Email '" + request.getEmail() + "' already exists");
+
+        if (!user.getEmail().equals(request.getEmail()) &&
+                userRepository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("Email already exists");
         }
-        User user = getUserById(userId);
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         return user;
     }
 
     @Transactional
-    public User transferTeamLeaderRole(Long currentLeaderId, Long newLeaderId) {
-        User currentLeader = getUserById(currentLeaderId);
+    public User transferTeamLeaderRole(Long newLeaderId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User currentLeader = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
         User newLeader = getUserById(newLeaderId);
 
-        if (currentLeader.getRole() != Role.TEAMLEADER) {
-            throw new ForbiddenException("Only TeamLeader can transfer their role");
-        }
-
-        if (currentLeader.getTeam() == null || !currentLeader.getTeam().getId().equals(newLeader.getTeam().getId())) {
+        if (!currentLeader.getTeam().getId().equals(newLeader.getTeam().getId())) {
             throw new ForbiddenException("Both users must be in the same team");
-        }
-
-        if (newLeader.getRole() != Role.MEMBER) {
-            throw new ValidationException("User must have MEMBER role to become TeamLeader");
         }
 
         currentLeader.setRole(Role.MEMBER);

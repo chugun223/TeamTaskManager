@@ -4,6 +4,7 @@ package ru.urfu.TeamTaskManager.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.request.UserRequest;
@@ -21,12 +22,7 @@ public class UserController {
     private final UserService userService;
     private final DtoMapper dtoMapper;
 
-    @PostMapping
-    public UserResponse createUser(@RequestBody @Valid UserRequest request) {
-        var user = userService.createUser(request);
-        return dtoMapper.toUserResponse(user);
-    }
-
+    @PreAuthorize("hasRole('TEAMLEADER')")
     @PutMapping("/{userId}/team/{teamId}")
     public UserResponse assignUserToTeam(@PathVariable Long userId, @PathVariable Long teamId) {
         var user = userService.assignUserToTeam(userId, teamId);
@@ -51,25 +47,27 @@ public class UserController {
         return dtoMapper.toUserResponse(user);
     }
 
-    @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable Long userId) {
-        userService.deleteUser(userId);
+    @DeleteMapping
+    public void deleteUser() {
+        userService.deleteUser();
     }
 
-    @DeleteMapping("/{teamId}/members/{userId}")
-    public void removeUserFromTeam(@PathVariable Long teamId, @PathVariable Long userId) {
-        userService.removeUserFromTeam(teamId, userId);
+    @PreAuthorize("hasAnyRole('TEAMLEADER','MEMBER')")
+    @DeleteMapping("/members/{userId}")
+    public void removeUserFromTeam(@PathVariable Long userId) {
+        userService.removeUserFromTeam(userId);
     }
 
-    @PutMapping("/{userId}")
-    public UserResponse updateUser(@PathVariable Long userId, @RequestBody @Valid UserRequest request) {
-        var user = userService.updateUser(userId, request);
+    @PutMapping
+    public UserResponse updateUser(@RequestBody @Valid UserRequest request) {
+        var user = userService.updateUser(request);
         return dtoMapper.toUserResponse(user);
     }
 
-    @PutMapping("/{currentLeaderId}/transfer-role/{newLeaderId}")
-    public UserResponse transferTeamLeaderRole(@PathVariable Long currentLeaderId, @PathVariable Long newLeaderId) {
-        var user = userService.transferTeamLeaderRole(currentLeaderId, newLeaderId);
+    @PreAuthorize("hasRole('TEAMLEADER')")
+    @PutMapping("/transfer-role/{newLeaderId}")
+    public UserResponse transferTeamLeaderRole(@PathVariable Long newLeaderId) {
+        var user = userService.transferTeamLeaderRole(newLeaderId);
         return dtoMapper.toUserResponse(user);
     }
 }

@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.request.TeamRequest;
@@ -22,9 +23,10 @@ public class TeamController {
     private final TeamService teamService;
     private final DtoMapper dtoMapper;
 
+    @PreAuthorize("hasRole('NONE')")
     @PostMapping
-    public TeamResponse createTeam(@RequestParam Long userId, @RequestBody @Valid TeamRequest request) {
-        var team = teamService.createTeam(userId, request);
+    public TeamResponse createTeam(@RequestBody @Valid TeamRequest request) {
+        var team = teamService.createTeam(request);
         return dtoMapper.toTeamResponse(team);
     }
 
@@ -39,6 +41,7 @@ public class TeamController {
         return dtoMapper.toTeamResponse(team);
     }
 
+    @PreAuthorize("hasRole('TEAMLEADER')")
     @DeleteMapping("/{teamId}")
     public void deleteTeam(@PathVariable Long teamId) {
         teamService.deleteTeam(teamId);
@@ -51,6 +54,7 @@ public class TeamController {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('TEAMLEADER')")
     @PutMapping("/{teamId}")
     public TeamResponse updateTeam(@PathVariable Long teamId, @RequestBody @Valid TeamRequest request) {
         var team = teamService.updateTeam(teamId, request);
