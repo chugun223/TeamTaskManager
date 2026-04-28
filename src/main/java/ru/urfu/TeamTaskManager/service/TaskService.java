@@ -1,6 +1,8 @@
 package ru.urfu.TeamTaskManager.service;
 
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,14 +27,20 @@ import java.util.Objects;
 @Transactional(readOnly = true)
 public class TaskService {
 
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
+
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public Task createTask(TaskRequest request) {
+        log.info("Attempt to create task with title: {}", request.getTitle());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-        User leader = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        User leader = userRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("User not found with username: {}", username);
+            return new NotFoundException("User not found with username: " + username);
+        });
 
         Task task = Task.builder()
                 .title(request.getTitle())
@@ -41,73 +49,110 @@ public class TaskService {
                 .build();
 
         if (request.getAssignedUserId() != null) {
-            User user = userRepository.findById(request.getAssignedUserId()).orElseThrow(() -> new NotFoundException("User not found with id: " + request.getAssignedUserId()));
+            User user = userRepository.findById(request.getAssignedUserId()).orElseThrow(() -> {
+                log.error("User not found with id: {}", request.getAssignedUserId());
+                return new NotFoundException("User not found with id: " + request.getAssignedUserId());
+            });
                 if(user.getTeam() != null && leader.getTeam() != null && !user.getTeam().equals(leader.getTeam())) {
+                    log.warn("Team leader {} cannot assign task to user from different team", username);
                     throw new ForbiddenException("Team leaders can only assign tasks to users from their team");
                 }
             task.setAssignedUser(user);
         }
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        log.info("Task created successfully with id: {}", saved.getId());
+        return saved;
     }
 
     public Task getTaskById(Long taskId) {
-        return taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Task not found with id: " + taskId));
+        log.info("Getting task by id: {}", taskId);
+        return taskRepository.findById(taskId).orElseThrow(() -> {
+            log.error("Task not found with id: {}", taskId);
+            return new NotFoundException("Task not found with id: " + taskId);
+        });
     }
 
     public List<Task> getUserTasks(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        log.info("Getting tasks for user id: {}", userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            log.error("User not found with id: {}", userId);
+            return new NotFoundException("User not found with id: " + userId);
+        });
         return user.getTasks();
     }
 
     public Page<Task> getAllTasks(int page, int size) {
+        log.info("Getting all tasks with page: {}, size: {}", page, size);
         Pageable pageable = PageRequest.of(page, size);
         return taskRepository.findAll(pageable);
     }
 
     @Transactional
     public void deleteTask(Long taskId) {
+        log.info("Attempt to delete task with id: {}", taskId);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-        User leader = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        User leader = userRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("User not found with username: {}", username);
+            return new NotFoundException("User not found with username: " + username);
+        });
         Task task = getTaskById(taskId);
         User assignedUser = task.getAssignedUser();
         if(assignedUser.getTeam() != null && leader.getTeam() != null && !assignedUser.getTeam().equals(leader.getTeam())){
+            log.warn("Team leader {} cannot delete task assigned to user from different team", username);
             throw new ForbiddenException("Team leaders can only delete tasks assigned to users from their team");
         }
         taskRepository.delete(task);
+        log.info("Task {} deleted", taskId);
     }
 
     @Transactional
     public Task changeTaskAssignedUser(Long taskId, Long userId) {
+        log.info("Attempt to change assigned user for task {} to user {}", taskId, userId);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-        User teamLeader = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        User teamLeader = userRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("User not found with username: {}", username);
+            return new NotFoundException("User not found with username: " + username);
+        });
         Task task = getTaskById(taskId);
         User previousAssignedUser = task.getAssignedUser();
         if (previousAssignedUser == null) {
+            log.warn("Task {} has no assigned user", taskId);
             throw new ValidationException("Task has no assigned user");
         }
-        User nextAssignedUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        User nextAssignedUser = userRepository.findById(userId).orElseThrow(() -> {
+            log.error("User not found with id: {}", userId);
+            return new NotFoundException("User not found with id: " + userId);
+        });
         if(nextAssignedUser.getTeam() == null || previousAssignedUser.getTeam() == null || teamLeader.getTeam() == null) {
+            log.warn("Missing team information for reassigning task {}", taskId);
             throw new ValidationException("User team information is missing, cannot reassign task");
         }
         if(!teamLeader.getTeam().equals(nextAssignedUser.getTeam()) || !teamLeader.getTeam().equals(previousAssignedUser.getTeam())) {
+            log.warn("Team leader {} cannot reassign task {} to user from different team", username, taskId);
             throw new ValidationException("Team leader can only reassign tasks to users from their team");
         }
 
         task.setAssignedUser(nextAssignedUser);
+        log.info("Task {} assigned user changed to {}", taskId, userId);
         return task;
     }
 
     @Transactional
     public Task updateTaskFromRequest(Long taskId, TaskRequest request) {
+        log.info("Attempt to update task with id: {}", taskId);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-        User teamLeader = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        User teamLeader = userRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("User not found with username: {}", username);
+            return new NotFoundException("User not found with username: " + username);
+        });
         Task existingTask = getTaskById(taskId);
         User assignedUser = existingTask.getAssignedUser();
         if (assignedUser != null && assignedUser.getTeam() != null && teamLeader.getTeam() != null && !assignedUser.getTeam().equals(teamLeader.getTeam())) {
+            log.warn("Team leader {} cannot update task assigned to user from different team", username);
             throw new ForbiddenException("Team leaders can only update tasks assigned to users from their team");
         }
         existingTask.setTitle(request.getTitle());
@@ -115,30 +160,42 @@ public class TaskService {
         existingTask.setDeadline(request.getDeadline());
 
         if (request.getAssignedUserId() != null) {
-            User newAssignedUser = userRepository.findById(request.getAssignedUserId()).orElseThrow(() -> new NotFoundException("User not found with id: " + request.getAssignedUserId()));
+            User newAssignedUser = userRepository.findById(request.getAssignedUserId()).orElseThrow(() -> {
+                log.error("User not found with id: {}", request.getAssignedUserId());
+                return new NotFoundException("User not found with id: " + request.getAssignedUserId());
+            });
             if(!newAssignedUser.getTeam().equals(teamLeader.getTeam())) {
+                log.warn("Team leader {} cannot assign task to user from different team", username);
                 throw new ForbiddenException("Team leaders can only assign tasks to users from their team");
             }
             existingTask.setAssignedUser(newAssignedUser);
         }
+        log.info("Task {} updated", taskId);
         return existingTask;
     }
 
     @Transactional
     public Task updateTaskStatus(Long taskId, TaskStatus taskStatus) {
+        log.info("Attempt to update status for task {} to {}", taskId, taskStatus);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("User not found with username: {}", username);
+            return new NotFoundException("User not found with username: " + username);
+        });
         Task task = getTaskById(taskId);
         User assignedUser = task.getAssignedUser();
         if (assignedUser == null) {
+            log.warn("Task {} has no assigned user", taskId);
             throw new ValidationException("Task has no assigned user");
         }
         if(user.getRole() == Role.MEMBER && Objects.equals(user.getId(), task.getAssignedUser().getId())
         || user.getRole() == Role.TEAMLEADER && task.getAssignedUser().getTeam() == user.getTeam()) {
             task.setTaskStatus(taskStatus);
+            log.info("Task {} status updated to {}", taskId, taskStatus);
         }
         else {
+            log.warn("User {} cannot update status of task {}", username, taskId);
             throw new ForbiddenException("Users can only update status of their own tasks or team leaders can update status of tasks assigned to users from their team");
         }
         return task;

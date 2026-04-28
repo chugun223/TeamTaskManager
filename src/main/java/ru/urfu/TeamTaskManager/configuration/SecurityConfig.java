@@ -1,6 +1,8 @@
 package ru.urfu.TeamTaskManager.configuration;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -16,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -34,11 +37,13 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .successHandler((request, response, authentication) -> {
+                            log.info("User {} logged in successfully", authentication.getName());
                             response.setStatus(HttpServletResponse.SC_OK);
                             response.getWriter().write("{\"result\": \"success\"}");
                             response.setContentType("application/json");
                         })
                         .failureHandler((request, response, exception) -> {
+                            log.warn("Login failed: {}", exception.getMessage());
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.getWriter().write("{\"result\": \"failed\"}");
                             response.setContentType("application/json");
