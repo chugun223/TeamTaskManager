@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Validated
 public class UserController {
     private final UserService userService;
+
     private final DtoMapper dtoMapper;
 
     @PreAuthorize("hasRole('TEAMLEADER')")

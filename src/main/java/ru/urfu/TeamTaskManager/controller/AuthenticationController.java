@@ -13,9 +13,9 @@ import ru.urfu.TeamTaskManager.service.UserService;
 
 @RestController
 @RequiredArgsConstructor
-public class AuthController {
-
+public class AuthenticationController {
     private final UserService userService;
+
     private final DtoMapper dtoMapper;
 
     @PostMapping("/register")

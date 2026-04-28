@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Validated
 public class TaskController {
-
     private final TaskService taskService;
     private final DtoMapper dtoMapper;
 

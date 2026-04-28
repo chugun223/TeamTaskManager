@@ -19,6 +19,7 @@ public class Team {
     private Long id;
 
     private String name;
+
     private String description;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
