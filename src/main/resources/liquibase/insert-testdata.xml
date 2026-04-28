@@ -9,14 +9,12 @@
 
         <!-- TEAM 1 -->
         <insert tableName="teams">
-            <column name="id" valueNumeric="1"/>
             <column name="name" value="Backend Team"/>
             <column name="description" value="Java backend developers"/>
         </insert>
 
         <!-- Team 1 users -->
         <insert tableName="users">
-            <column name="id" valueNumeric="1"/>
             <column name="username" value="leader1"/>
             <column name="email" value="leader1@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -25,7 +23,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="2"/>
             <column name="username" value="member1"/>
             <column name="email" value="member1@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -34,7 +31,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="3"/>
             <column name="username" value="member2"/>
             <column name="email" value="member2@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -43,7 +39,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="4"/>
             <column name="username" value="member3"/>
             <column name="email" value="member3@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -54,14 +49,12 @@
 
         <!-- TEAM 2 -->
         <insert tableName="teams">
-            <column name="id" valueNumeric="2"/>
             <column name="name" value="Frontend Team"/>
             <column name="description" value="UI/UX and frontend developers"/>
         </insert>
 
         <!-- Team 2 users -->
         <insert tableName="users">
-            <column name="id" valueNumeric="5"/>
             <column name="username" value="leader2"/>
             <column name="email" value="leader2@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -70,7 +63,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="6"/>
             <column name="username" value="member4"/>
             <column name="email" value="member4@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -79,7 +71,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="7"/>
             <column name="username" value="member5"/>
             <column name="email" value="member5@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -88,7 +79,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="8"/>
             <column name="username" value="member6"/>
             <column name="email" value="member6@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -99,7 +89,6 @@
 
         <!-- USERS WITHOUT TEAM -->
         <insert tableName="users">
-            <column name="id" valueNumeric="9"/>
             <column name="username" value="free1"/>
             <column name="email" value="free1@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -108,7 +97,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="10"/>
             <column name="username" value="free2"/>
             <column name="email" value="free2@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -117,7 +105,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="11"/>
             <column name="username" value="free3"/>
             <column name="email" value="free3@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -126,7 +113,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="12"/>
             <column name="username" value="free4"/>
             <column name="email" value="free4@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -135,7 +121,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="13"/>
             <column name="username" value="free5"/>
             <column name="email" value="free5@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -144,7 +129,6 @@
         </insert>
 
         <insert tableName="users">
-            <column name="id" valueNumeric="14"/>
             <column name="username" value="free6"/>
             <column name="email" value="free6@mail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
@@ -155,7 +139,6 @@
 
         <!-- TASKS -->
         <insert tableName="tasks">
-            <column name="id" valueNumeric="1"/>
             <column name="title" value="Backend API"/>
             <column name="description" value="Create REST controllers"/>
             <column name="deadline" valueDate="2026-05-01T12:00:00"/>
@@ -165,7 +148,6 @@
         </insert>
 
         <insert tableName="tasks">
-            <column name="id" valueNumeric="2"/>
             <column name="title" value="Frontend UI"/>
             <column name="description" value="Build React components"/>
             <column name="deadline" valueDate="2026-05-02T12:00:00"/>
