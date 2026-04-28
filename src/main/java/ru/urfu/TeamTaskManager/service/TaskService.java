@@ -14,6 +14,7 @@ import ru.urfu.TeamTaskManager.domain.*;
 import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
+import ru.urfu.TeamTaskManager.exception.ConflictException;
 import ru.urfu.TeamTaskManager.exception.ForbiddenException;
 import ru.urfu.TeamTaskManager.exception.NotFoundException;
 import ru.urfu.TeamTaskManager.exception.ValidationException;
@@ -120,7 +121,7 @@ public class TaskService {
         User previousAssignedUser = task.getAssignedUser();
         if (previousAssignedUser == null) {
             log.warn("Task {} has no assigned user", taskId);
-            throw new ValidationException("Task has no assigned user");
+            throw new ConflictException("Task has no assigned user");
         }
         User nextAssignedUser = userRepository.findById(userId).orElseThrow(() -> {
             log.error("User not found with id: {}", userId);
@@ -132,7 +133,7 @@ public class TaskService {
         }
         if(!teamLeader.getTeam().equals(nextAssignedUser.getTeam()) || !teamLeader.getTeam().equals(previousAssignedUser.getTeam())) {
             log.warn("Team leader {} cannot reassign task {} to user from different team", username, taskId);
-            throw new ValidationException("Team leader can only reassign tasks to users from their team");
+            throw new ForbiddenException("Team leader can only reassign tasks to users from their team");
         }
 
         task.setAssignedUser(nextAssignedUser);
@@ -187,7 +188,7 @@ public class TaskService {
         User assignedUser = task.getAssignedUser();
         if (assignedUser == null) {
             log.warn("Task {} has no assigned user", taskId);
-            throw new ValidationException("Task has no assigned user");
+            throw new ConflictException("Task has no assigned user");
         }
         if(user.getRole() == Role.MEMBER && Objects.equals(user.getId(), task.getAssignedUser().getId())
         || user.getRole() == Role.TEAMLEADER && task.getAssignedUser().getTeam() == user.getTeam()) {
