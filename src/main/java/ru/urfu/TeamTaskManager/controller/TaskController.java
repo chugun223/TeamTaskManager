@@ -2,9 +2,11 @@ package ru.urfu.TeamTaskManager.controller;
 
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.urfu.TeamTaskManager.dto.mapper.DtoMapper;
 import ru.urfu.TeamTaskManager.dto.response.TaskResponse;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
+@Validated
 public class TaskController {
 
     private final TaskService taskService;
@@ -31,13 +34,13 @@ public class TaskController {
     }
 
     @GetMapping("/{taskId}")
-    public TaskResponse getTaskById(@PathVariable Long taskId) {
+    public TaskResponse getTaskById(@PathVariable @Min(1) Long taskId) {
         var task = taskService.getTaskById(taskId);
         return dtoMapper.toTaskResponse(task);
     }
 
     @GetMapping("/user/{userId}")
-    public List<TaskResponse> getUserTasks(@PathVariable Long userId) {
+    public List<TaskResponse> getUserTasks(@PathVariable @Min(1) Long userId) {
         var tasks = taskService.getUserTasks(userId);
         return tasks.stream()
                 .map(dtoMapper::toTaskResponseBrief)
@@ -57,21 +60,21 @@ public class TaskController {
 
     @PreAuthorize("hasRole('TEAMLEADER')")
     @PutMapping("/{taskId}/reassign/{userId}")
-    public TaskResponse changeTaskAssignment(@PathVariable Long taskId, @PathVariable Long userId) {
+    public TaskResponse changeTaskAssignment(@PathVariable @Min(1) Long taskId, @PathVariable @Min(1) Long userId) {
         var task = taskService.changeTaskAssignedUser(taskId, userId);
         return dtoMapper.toTaskResponse(task);
     }
 
     @PreAuthorize("hasRole('TEAMLEADER')")
     @PutMapping("/{taskId}")
-    public TaskResponse updateTask(@PathVariable Long taskId, @RequestBody @Valid TaskRequest request) {
+    public TaskResponse updateTask(@PathVariable @Min(1) Long taskId, @RequestBody @Valid TaskRequest request) {
         var task = taskService.updateTaskFromRequest(taskId, request);
         return dtoMapper.toTaskResponse(task);
     }
 
     @PreAuthorize("hasAnyRole('TEAMLEADER','MEMBER')")
     @PutMapping("/{taskId}/status")
-    public TaskResponse updateTaskStatus(@PathVariable Long taskId, @RequestBody TaskStatus taskStatus) {
+    public TaskResponse updateTaskStatus(@PathVariable @Min(1) Long taskId, @RequestBody TaskStatus taskStatus) {
         var task = taskService.updateTaskStatus(taskId, taskStatus);
         return dtoMapper.toTaskResponse(task);
     }
