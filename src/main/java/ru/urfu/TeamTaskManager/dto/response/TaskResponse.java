@@ -5,6 +5,7 @@ import lombok.Data;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -24,4 +25,6 @@ public class TaskResponse {
     private TaskStatus taskStatus;
 
     private UserResponse assignedUser;
+
+    private List<FileResponse> files;
 }

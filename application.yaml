@@ -16,3 +16,13 @@ spring:
   liquibase:
     change-log: classpath:liquibase/master-changelog.xml
     enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 5GB
+
+  app:
+    upload:
+      dir: ./uploads
+

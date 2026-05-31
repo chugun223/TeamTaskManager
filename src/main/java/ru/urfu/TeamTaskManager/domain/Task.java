@@ -5,6 +5,8 @@ import lombok.*;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,6 +37,10 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user_id")
     User assignedUser;
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<File> files = new ArrayList<>();
 
     @PrePersist
     private void onCreate() {

@@ -63,4 +63,24 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="4" author="chugun223">
+        <createTable tableName="files">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="filename" type="VARCHAR(255)"/>
+            <column name="content_type" type="VARCHAR(255)"/>
+            <column name="size" type="BIGINT"/>
+            <column name="file_path" type="VARCHAR(500)" remarks="Path to file on disk">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_at" type="TIMESTAMP"/>
+            <column name="task_id" type="BIGINT"/>
+        </createTable>
+        <addAutoIncrement columnName="id" tableName="files"/>
+        <addForeignKeyConstraint baseTableName="files" baseColumnNames="task_id"
+                                 referencedTableName="tasks" referencedColumnNames="id"
+                                 constraintName="fk_files_task" onDelete="CASCADE"/>
+    </changeSet>
+
 </databaseChangeLog>

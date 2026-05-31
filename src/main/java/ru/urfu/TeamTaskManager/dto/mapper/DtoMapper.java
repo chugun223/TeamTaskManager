@@ -6,6 +6,8 @@ import ru.urfu.TeamTaskManager.dto.response.*;
 
 import java.util.stream.Collectors;
 
+import ru.urfu.TeamTaskManager.dto.response.FileResponse;
+
 @Component
 public class DtoMapper {
     public UserResponse toUserResponse(User user) {
@@ -80,6 +82,14 @@ public class DtoMapper {
                 .deadline(task.getDeadline())
                 .taskStatus(task.getTaskStatus())
                 .assignedUser(toUserResponseBrief(task.getAssignedUser()))
+                .files(task.getFiles() == null ? null : task.getFiles().stream()
+                        .map(a -> FileResponse.builder()
+                                .id(a.getId())
+                                .filename(a.getFilename())
+                                .contentType(a.getContentType())
+                                .size(a.getSize())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
     }
 
