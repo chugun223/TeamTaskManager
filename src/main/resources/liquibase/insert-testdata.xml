@@ -40,7 +40,7 @@
 
         <insert tableName="users">
             <column name="username" value="member3"/>
-            <column name="email" value="member3@mail.com"/>
+            <column name="email" value="timofey70102018@gmail.com"/>
             <column name="password" value="$2a$10$M/Tbgf5If/.C.VfjQEW9cOc59CC1Pfggvn8sXf4.gh/LPF4xhLcj."/>
             <column name="role" value="MEMBER"/>
             <column name="team_id" valueNumeric="1"/>

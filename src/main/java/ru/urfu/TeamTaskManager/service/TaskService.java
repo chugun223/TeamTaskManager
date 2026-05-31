@@ -3,6 +3,7 @@ package ru.urfu.TeamTaskManager.service;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,12 +15,12 @@ import ru.urfu.TeamTaskManager.domain.*;
 import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
+import ru.urfu.TeamTaskManager.event.TaskAssignedEvent;
 import ru.urfu.TeamTaskManager.exception.ConflictException;
 import ru.urfu.TeamTaskManager.exception.ForbiddenException;
 import ru.urfu.TeamTaskManager.exception.NotFoundException;
 import ru.urfu.TeamTaskManager.exception.ValidationException;
 import ru.urfu.TeamTaskManager.repository.*;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -30,8 +31,10 @@ public class TaskService {
 
     private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
+    private final MailService mailService;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Task createTask(TaskRequest request) {
@@ -63,6 +66,7 @@ public class TaskService {
 
         Task saved = taskRepository.save(task);
         log.info("Task created successfully with id: {}", saved.getId());
+        eventPublisher.publishEvent(new TaskAssignedEvent(saved.getId(), saved.getAssignedUser().getId()));
         return saved;
     }
 
@@ -138,6 +142,7 @@ public class TaskService {
 
         task.setAssignedUser(nextAssignedUser);
         log.info("Task {} assigned user changed to {}", taskId, userId);
+        eventPublisher.publishEvent(new TaskAssignedEvent(task.getId(), task.getAssignedUser().getId()));
         return task;
     }
 
@@ -172,6 +177,7 @@ public class TaskService {
             existingTask.setAssignedUser(newAssignedUser);
         }
         log.info("Task {} updated", taskId);
+        eventPublisher.publishEvent(new TaskAssignedEvent(existingTask.getId(), existingTask.getAssignedUser().getId()));
         return existingTask;
     }
 
