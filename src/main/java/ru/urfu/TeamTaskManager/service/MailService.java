@@ -20,6 +20,7 @@ public class MailService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
+    @Async
     public void sendTaskAssignedNotification(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
@@ -40,5 +41,29 @@ public class MailService {
         message.setFrom("team.task.manager.project@gmail.com");
         log.info("Sending task assignment notification email to {} for taskId={}", user.getEmail(), taskId);
         mailSender.send(message);
+    }
+
+    @Async
+    public void sendDeadlineReminder(Long taskId, Long userId) {
+        try {
+            Task task = taskRepository.findById(taskId).orElseThrow();
+            User user = userRepository.findById(userId).orElseThrow();
+
+            String subject = "Напоминание: срок выполнения задачи истекает";
+            String body = String.format(
+                    "Здравствуйте, %s!\n\n" + "Напоминаем, что до окончания срока выполнения задачи остался 1 день:\n\n" + "Название: %s\n" + "Описание: %s\n" + "Дедлайн: %s\n\n" + "Пожалуйста, завершите задачу вовремя.\n\n" + "С уважением,\nСистема TeamTaskManager",
+                    user.getUsername(), task.getTitle(), task.getDescription() != null ? task.getDescription() : "—", task.getDeadline() != null ? task.getDeadline() : "не указан");
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(user.getEmail());
+            message.setSubject(subject);
+            message.setText(body);
+            message.setFrom("team.task.manager.project@gmail.com");
+
+            mailSender.send(message);
+            log.info("Deadline reminder sent to {} for task {}", user.getEmail(), taskId);
+        } catch (Exception e) {
+            log.error("Failed to send deadline reminder for task {} to user {}: {}", taskId, userId, e.getMessage(), e);
+        }
     }
 }

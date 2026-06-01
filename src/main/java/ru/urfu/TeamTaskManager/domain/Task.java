@@ -34,6 +34,9 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskStatus taskStatus;
 
+    @Column(name = "deadline_notified")
+    private boolean deadlineNotified;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user_id")
     User assignedUser;
