@@ -1,6 +1,7 @@
 package ru.urfu.TeamTaskManager.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,6 +20,9 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+
+    @Value("${MAIL_USER}")
+    private String adminEmail;
 
     @Async
     public void sendTaskAssignedNotification(Long taskId, Long userId) {
@@ -64,6 +68,22 @@ public class MailService {
             log.info("Deadline reminder sent to {} for task {}", user.getEmail(), taskId);
         } catch (Exception e) {
             log.error("Failed to send deadline reminder for task {} to user {}: {}", taskId, userId, e.getMessage(), e);
+        }
+    }
+
+    @Async
+    public void sendHealthAlert(String subject, String body) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(adminEmail);
+            message.setSubject(subject);
+            message.setText(body);
+            message.setFrom("team.task.manager.project@gmail.com");
+
+            mailSender.send(message);
+            log.info("Health alert sent to admin");
+        } catch (Exception e) {
+            log.error("Failed to send health alert: {}", e.getMessage());
         }
     }
 }
