@@ -1,6 +1,8 @@
 package ru.urfu.TeamTaskManager.service;
 
 import lombok.AllArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,11 +18,15 @@ import ru.urfu.TeamTaskManager.dto.request.TaskRequest;
 import ru.urfu.TeamTaskManager.enums.Role;
 import ru.urfu.TeamTaskManager.enums.TaskStatus;
 import ru.urfu.TeamTaskManager.event.TaskAssignedEvent;
+import ru.urfu.TeamTaskManager.event.TaskDeletedEvent;
 import ru.urfu.TeamTaskManager.exception.ConflictException;
 import ru.urfu.TeamTaskManager.exception.ForbiddenException;
 import ru.urfu.TeamTaskManager.exception.NotFoundException;
 import ru.urfu.TeamTaskManager.exception.ValidationException;
 import ru.urfu.TeamTaskManager.repository.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,6 +41,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final FileStorageService fileStorageService;
 
     @Transactional
     public Task createTask(TaskRequest request) {
@@ -108,6 +115,10 @@ public class TaskService {
             log.warn("Team leader {} cannot delete task assigned to user from different team", username);
             throw new ForbiddenException("Team leaders can only delete tasks assigned to users from their team");
         }
+        for (File file : task.getFiles()) {
+            fileStorageService.deleteFile(file.getFilePath());
+        }
+        eventPublisher.publishEvent(new TaskDeletedEvent(task.getId(), task.getTitle(), assignedUser.getId()));
         taskRepository.delete(task);
         log.info("Task {} deleted", taskId);
     }
@@ -142,7 +153,9 @@ public class TaskService {
 
         task.setAssignedUser(nextAssignedUser);
         log.info("Task {} assigned user changed to {}", taskId, userId);
+        eventPublisher.publishEvent(new TaskDeletedEvent(task.getId(), task.getTitle(), previousAssignedUser.getId()));
         eventPublisher.publishEvent(new TaskAssignedEvent(task.getId(), task.getAssignedUser().getId()));
+
         return task;
     }
 
@@ -206,5 +219,75 @@ public class TaskService {
             throw new ForbiddenException("Users can only update status of their own tasks or team leaders can update status of tasks assigned to users from their team");
         }
         return task;
+    }
+
+    @Transactional
+    public byte[] exportTasksToExcel(Long userId) {
+        log.info("Trying export all tasks to Excel");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User currentUser = userRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("User not found with id: {}", userId);
+            throw new NotFoundException("User not found with userId: " + userId);
+        });
+
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            log.error("User not found with id: {}", userId);
+            return new NotFoundException("User not found with userId: " + userId);
+        });
+        if (!((currentUser.getRole() == Role.TEAMLEADER && currentUser.getTeam() != null && user.getTeam() != null && currentUser.getTeam().getId().equals(user.getTeam().getId())) || currentUser.getId().equals(user.getId()))) {
+            log.error("User {} cannot export tasks of user {}", currentUser.getId(), user.getId());
+            throw new ForbiddenException("You don't have permission to export these tasks");
+        }
+        List<Task> tasks = user.getTasks();
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Задачи");
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 12);
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            String[] columns = {"id", "название", "описание", "статус", "дедлайн", "исполнитель", "создана"};
+            Row headerRow = sheet.createRow(0);
+
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int stroka = 1;
+            for (Task task : tasks) {
+                Row row = sheet.createRow(stroka++);
+                row.createCell(0).setCellValue(task.getId());
+                row.createCell(1).setCellValue(task.getTitle());
+                row.createCell(2).setCellValue(task.getDescription() != null ? task.getDescription() : "");
+                row.createCell(3).setCellValue(task.getTaskStatus() != null ? task.getTaskStatus().name() : "");
+                row.createCell(4).setCellValue(task.getDeadline() != null ? task.getDeadline().toString() : "");
+                row.createCell(5).setCellValue(task.getAssignedUser() != null ? task.getAssignedUser().getUsername() : "");
+                row.createCell(6).setCellValue(task.getCreated_at() != null ? task.getCreated_at().toString() : "");
+            }
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            sheet.createFreezePane(0, 1);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            log.info("Excel export completed successfully");
+            return outputStream.toByteArray();
+        }
+        catch (IOException e) {
+            log.error("Failed to export tasks to Excel", e);
+            throw new RuntimeException("Failed to export tasks to Excel", e);
+        }
     }
 }

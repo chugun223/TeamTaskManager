@@ -5,6 +5,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -76,5 +79,16 @@ public class TaskController {
     public TaskResponse updateTaskStatus(@PathVariable @Min(1) Long taskId, @RequestBody TaskStatus taskStatus) {
         var task = taskService.updateTaskStatus(taskId, taskStatus);
         return dtoMapper.toTaskResponse(task);
+    }
+
+    @PreAuthorize("hasAnyRole('TEAMLEADER','MEMBER')")
+    @GetMapping("/export/excel/{userId}")
+    public ResponseEntity<byte[]> exportTasksToExcel(@PathVariable @Min(1) Long userId) {
+        byte[] excelData = taskService.exportTasksToExcel(userId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=tasksExportExcel.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(excelData.length)
+                .body(excelData);
     }
 }

@@ -48,6 +48,26 @@ public class MailService {
     }
 
     @Async
+    public void sendTaskDeletedNotification(Long taskId, String taskTitle, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        log.info("Preparing to send task deleted notification for taskId={} to userId={}", taskId, userId);
+        String subject = "Задача " + taskTitle + " удалена";
+        String body = String.format(
+                "Здравствуйте, %s!\n\nИз вашего списка задач была удалена следующая задача:\n" + "Название: %s\nTeamTaskManager",
+                user.getUsername(),
+                taskTitle
+        );
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(user.getEmail());
+        message.setSubject(subject);
+        message.setText(body);
+        message.setFrom("team.task.manager.project@gmail.com");
+        log.info("Sending task deleted notification email to {} for taskId={}", user.getEmail(), taskId);
+        mailSender.send(message);
+    }
+
+    @Async
     public void sendDeadlineReminder(Long taskId, Long userId) {
         try {
             Task task = taskRepository.findById(taskId).orElseThrow();
